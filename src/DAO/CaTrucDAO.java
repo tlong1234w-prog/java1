@@ -12,7 +12,7 @@ public class CaTrucDAO {
     // ================================
     //  LẤY TẤT CẢ CA TRỰC
     // ================================
-    public List<CaTruc> selectAll() {
+    public List<CaTruc> getAll() {
         List<CaTruc> list = new ArrayList<>();
         String sql = "SELECT * FROM catruc";
 
@@ -32,16 +32,17 @@ public class CaTrucDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return list;
     }
-
 
     // ================================
     //  THÊM CA TRỰC
     // ================================
     public boolean insert(CaTruc ct) {
-        String sql = "INSERT INTO catruc (maca, tenca, thoigianbatdau, thoigianketthuc) VALUES (?, ?, ?, ?)";
+        String sql = """
+            INSERT INTO catruc (maca, tenca, thoigianbatdau, thoigianketthuc)
+            VALUES (?, ?, ?, ?)
+        """;
 
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -56,10 +57,8 @@ public class CaTrucDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return false;
     }
-
 
     // ================================
     //  CẬP NHẬT CA TRỰC
@@ -84,10 +83,8 @@ public class CaTrucDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return false;
     }
-
 
     // ================================
     //  XÓA CA TRỰC
@@ -104,112 +101,37 @@ public class CaTrucDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return false;
     }
-
-
-    // ================================
-    //  TÌM THEO TÊN CA
-    // ================================
-    public List<CaTruc> searchByName(String keyword) {
-        List<CaTruc> list = new ArrayList<>();
-
-        String sql = "SELECT * FROM catruc WHERE tenca LIKE ?";
-
-        try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setString(1, "%" + keyword + "%");
-
+    public boolean exists(String maCa) {
+        String sql = "SELECT 1 FROM catruc WHERE maca = ?";
+        try (
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+            ps.setString(1, maCa);
             ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(new CaTruc(
-                        rs.getString("maca"),
-                        rs.getString("tenca"),
-                        rs.getString("thoigianbatdau"),
-                        rs.getString("thoigianketthuc")
-                ));
-            }
-
+            return rs.next(); // có bản ghi → tồn tại
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return list;
+        return false;
     }
+    public static int countCaHomNay() {
+        int count = 0;
+        String sql = "SELECT COUNT(*) FROM PhanCong WHERE Ngay = CAST(GETDATE() AS DATE)";
 
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
-    // ================================
-    //  TÌM THEO TÊN NHÂN VIÊN
-    // ================================
-    public List<CaTruc> searchByEmployeeName(String keyword) {
-        List<CaTruc> list = new ArrayList<>();
-
-        String sql = """
-            SELECT c.maca, c.tenca, c.thoigianbatdau, c.thoigianketthuc
-            FROM phancong p
-            JOIN nhanvien n ON p.manv = n.manv
-            JOIN catruc c ON p.maca = c.maca
-            WHERE n.hoten LIKE ?
-        """;
-
-        try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setString(1, "%" + keyword + "%");
-
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(new CaTruc(
-                        rs.getString("maca"),
-                        rs.getString("tenca"),
-                        rs.getString("thoigianbatdau"),
-                        rs.getString("thoigianketthuc")
-                ));
+            if (rs.next()) {
+                count = rs.getInt(1);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return list;
+        return count;
     }
-
-
-    // ================================
-    //  TÌM THEO MÃ NHÂN VIÊN
-    // ================================
-    public List<CaTruc> searchByEmployeeId(String id) {
-        List<CaTruc> list = new ArrayList<>();
-
-        String sql = """
-            SELECT c.maca, c.tenca, c.thoigianbatdau, c.thoigianketthuc
-            FROM phancong p
-            JOIN nhanvien n ON p.manv = n.manv
-            JOIN catruc c ON p.maca = c.maca
-            WHERE n.manv = ?
-        """;
-
-        try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setString(1, id);
-
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(new CaTruc(
-                        rs.getString("maca"),
-                        rs.getString("tenca"),
-                        rs.getString("thoigianbatdau"),
-                        rs.getString("thoigianketthuc")
-                ));
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return list;
-    }
+    
 }

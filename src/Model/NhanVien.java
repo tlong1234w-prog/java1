@@ -14,8 +14,8 @@ public class NhanVien {
     public NhanVien() {
     }
 
-    public NhanVien(int manv, String hoten, String chucvu, String sdt, Date ngaysinh, String taikhoan, String matkhau) {
-        this.manv = manv;
+    public NhanVien(int i, String hoten, String chucvu, String sdt, Date ngaysinh, String taikhoan, String matkhau) {
+        this.manv = i;
         this.hoten = hoten;
         this.chucvu = chucvu;
         this.sdt = sdt;
@@ -79,4 +79,10 @@ public class NhanVien {
     public void setMatkhau(String matkhau) {
         this.matkhau = matkhau;
     }
+    @Override
+    public String toString() {
+        return manv + " - " + hoten;
+    }
+
+    
 }

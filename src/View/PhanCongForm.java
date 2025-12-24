@@ -1,215 +1,198 @@
 package View;
 
 import DAO.PhanCongDAO;
+import DAO.NhanVienDAO;
+import DAO.CaTrucDAO;
 import Model.PhanCong;
+import Model.NhanVien;
+import Model.CaTruc;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-
 import com.toedter.calendar.JDateChooser;
 
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.Date;
-import java.util.List;
 
 public class PhanCongForm extends JPanel {
 
-    private JTextField txtId, txtMaNV, txtMaCa, txtGhiChu, txtSearch;
+    private JTextField txtId, txtGhiChu;
+    private JComboBox<NhanVien> cboMaNV;
+    private JComboBox<String> cboMaCa;
     private JDateChooser dateChooser;
     private JTable table;
     private DefaultTableModel model;
 
     private PhanCongDAO dao = new PhanCongDAO();
+    private NhanVienDAO nvDao = new NhanVienDAO();
+    private CaTrucDAO caDao = new CaTrucDAO();
 
     public PhanCongForm() {
-
-        // ❗ QUAN TRỌNG: JPanel KHÔNG dùng setTitle, setSize, setDefaultCloseOperation
         setLayout(null);
         setBackground(Color.WHITE);
 
-        // ===================== PANEL INPUT =====================
-        JPanel pnlInput = new JPanel(null);
-        pnlInput.setBorder(BorderFactory.createTitledBorder("Thông tin phân công"));
-        pnlInput.setBounds(10, 10, 550, 210);
-        add(pnlInput);
+        // ===== INPUT =====
+        JPanel pnl = new JPanel(null);
+        pnl.setBorder(BorderFactory.createTitledBorder("Phân công"));
+        pnl.setBounds(10, 10, 550, 200);
+        add(pnl);
 
-        // ===== ID =====
-        JLabel lblId = new JLabel("ID:");
-        lblId.setBounds(20, 25, 150, 25);
-        pnlInput.add(lblId);
-
+        pnl.add(new JLabel("ID:")).setBounds(20, 25, 80, 25);
         txtId = new JTextField();
-        txtId.setBounds(180, 25, 300, 25);
+        txtId.setBounds(150, 25, 300, 25);
         txtId.setEditable(false);
-        txtId.setFocusable(false);
-        pnlInput.add(txtId);
+        pnl.add(txtId);
 
-        // ===== Mã nhân viên =====
-        JLabel lblMaNV = new JLabel("Mã nhân viên:");
-        lblMaNV.setBounds(20, 60, 150, 25);
-        pnlInput.add(lblMaNV);
+        pnl.add(new JLabel("Nhân viên:")).setBounds(20, 60, 80, 25);
+        cboMaNV = new JComboBox<>();
+        cboMaNV.setBounds(150, 60, 300, 25);
+        pnl.add(cboMaNV);
 
-        txtMaNV = new JTextField();
-        txtMaNV.setBounds(180, 60, 300, 25);
-        pnlInput.add(txtMaNV);
+        pnl.add(new JLabel("Ca trực:")).setBounds(20, 95, 80, 25);
+        cboMaCa = new JComboBox<>();
+        cboMaCa.setBounds(150, 95, 300, 25);
+        pnl.add(cboMaCa);
 
-        // ===== Mã ca =====
-        JLabel lblMaCa = new JLabel("Mã ca:");
-        lblMaCa.setBounds(20, 95, 150, 25);
-        pnlInput.add(lblMaCa);
-
-        txtMaCa = new JTextField();
-        txtMaCa.setBounds(180, 95, 300, 25);
-        pnlInput.add(txtMaCa);
-
-        // ===== Ngày trực =====
-        JLabel lblNgayTruc = new JLabel("Ngày trực:");
-        lblNgayTruc.setBounds(20, 130, 150, 25);
-        pnlInput.add(lblNgayTruc);
-
+        pnl.add(new JLabel("Ngày:")).setBounds(20, 130, 80, 25);
         dateChooser = new JDateChooser();
-        dateChooser.setDateFormatString("yyyy-MM-dd");
-        dateChooser.setBounds(180, 130, 300, 25);
-        pnlInput.add(dateChooser);
+        dateChooser.setBounds(150, 130, 300, 25);
+        pnl.add(dateChooser);
 
-        // ===== Ghi chú =====
-        JLabel lblGhiChu = new JLabel("Ghi chú:");
-        lblGhiChu.setBounds(20, 165, 150, 25);
-        pnlInput.add(lblGhiChu);
-
+        pnl.add(new JLabel("Ghi chú:")).setBounds(20, 165, 80, 25);
         txtGhiChu = new JTextField();
-        txtGhiChu.setBounds(180, 165, 300, 25);
-        pnlInput.add(txtGhiChu);
+        txtGhiChu.setBounds(150, 165, 300, 25);
+        pnl.add(txtGhiChu);
 
-        // ===================== BUTTON PANEL =====================
-        JPanel pnlButtons = new JPanel(null);
-        pnlButtons.setBounds(580, 10, 300, 110);
-        pnlButtons.setBorder(BorderFactory.createTitledBorder("Chức năng"));
-        add(pnlButtons);
-
-        JButton btnAdd = new JButton("Thêm");
-        btnAdd.setBounds(20, 25, 110, 30);
-        pnlButtons.add(btnAdd);
-
-        JButton btnUpdate = new JButton("Sửa");
-        btnUpdate.setBounds(160, 25, 110, 30);
-        pnlButtons.add(btnUpdate);
-
-        JButton btnDelete = new JButton("Xóa");
-        btnDelete.setBounds(20, 65, 110, 30);
-        pnlButtons.add(btnDelete);
-
-        JButton btnClear = new JButton("Làm mới");
-        btnClear.setBounds(160, 65, 110, 30);
-        pnlButtons.add(btnClear);
-
-        // ===================== TABLE =====================
-        model = new DefaultTableModel(new String[]{"ID", "Mã NV", "Mã Ca", "Ngày", "Ghi Chú"}, 0);
+        // ===== TABLE =====
+        model = new DefaultTableModel(
+                new String[]{"ID", "Mã NV", "Mã Ca", "Ngày", "Ghi chú"}, 0
+        );
         table = new JTable(model);
-
         JScrollPane sp = new JScrollPane(table);
-        sp.setBounds(10, 230, 870, 320);
+        sp.setBounds(10, 220, 696, 300);
         add(sp);
 
-        // LOAD DATA
+        // ===== BUTTON =====
+        JButton btnAdd = new JButton("Thêm");
+        JButton btnUpdate = new JButton("Sửa");
+        JButton btnDelete = new JButton("Xóa");
+        JButton btnClear = new JButton("Làm mới");
+
+        btnAdd.setBounds(580, 20, 110, 30);
+        btnUpdate.setBounds(580, 70, 110, 30);
+        btnDelete.setBounds(580, 120, 110, 30);
+        btnClear.setBounds(580, 170, 110, 30);
+
+        add(btnAdd);
+        add(btnUpdate);
+        add(btnDelete);
+        add(btnClear);
+
+        // ===== LOAD DATA =====
+        loadMaNV();
+        loadMaCa();
         loadData();
 
-        // ===================== EVENT =====================
-
-        table.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                int row = table.getSelectedRow();
-                txtId.setText(model.getValueAt(row, 0).toString());
-                txtMaNV.setText(model.getValueAt(row, 1).toString());
-                txtMaCa.setText(model.getValueAt(row, 2).toString());
-                try {
-                    dateChooser.setDate(Date.valueOf(model.getValueAt(row, 3).toString()));
-                } catch (Exception ex) {}
-                txtGhiChu.setText(model.getValueAt(row, 4).toString());
-            }
-        });
-
+        // ===== EVENT =====
         btnAdd.addActionListener(e -> addPC());
         btnUpdate.addActionListener(e -> updatePC());
         btnDelete.addActionListener(e -> deletePC());
         btnClear.addActionListener(e -> clearForm());
+
+        table.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                int r = table.getSelectedRow();
+                if (r == -1) return;
+
+                txtId.setText(model.getValueAt(r, 0).toString());
+                int maNV = Integer.parseInt(model.getValueAt(r, 1).toString());
+
+                for (int i = 0; i < cboMaNV.getItemCount(); i++) {
+                    if (cboMaNV.getItemAt(i).getManv() == maNV) {
+                        cboMaNV.setSelectedIndex(i);
+                        break;
+                    }
+                }
+
+                cboMaCa.setSelectedItem(model.getValueAt(r, 2).toString());
+                dateChooser.setDate(Date.valueOf(model.getValueAt(r, 3).toString()));
+                txtGhiChu.setText(model.getValueAt(r, 4).toString());
+            }
+        });
     }
 
-    // ================== FUNCTIONS ==================
+    // ===== LOAD =====
+    void loadMaNV() {
+        cboMaNV.removeAllItems();
+        for (NhanVien nv : nvDao.getAll()) cboMaNV.addItem(nv);
+    }
+
+    void loadMaCa() {
+        cboMaCa.removeAllItems();
+        for (CaTruc ca : caDao.getAll()) cboMaCa.addItem(ca.getMaca());
+    }
 
     void loadData() {
         model.setRowCount(0);
-        List<PhanCong> list = dao.getAll();
-        for (PhanCong pc : list) {
+        for (PhanCong pc : dao.getAll()) {
             model.addRow(new Object[]{
-                    pc.getId(),
-                    pc.getManv(),
-                    pc.getMaca(),
-                    pc.getNgay(),
-                    pc.getGhiChu()
+                    pc.getId(), pc.getManv(), pc.getMaca(),
+                    pc.getNgay(), pc.getGhiChu()
             });
         }
     }
 
+    // ===== CRUD =====
     void addPC() {
-        try {
-            PhanCong pc = new PhanCong();
-            pc.setManv(Integer.parseInt(txtMaNV.getText()));
-            pc.setMaca(txtMaCa.getText());
-            pc.setNgay(new Date(dateChooser.getDate().getTime()));
-            pc.setGhiChu(txtGhiChu.getText());
+        if (!validateForm()) return;
 
-            if (dao.insert(pc)) {
-                JOptionPane.showMessageDialog(this, "Thêm thành công!");
-                loadData();
-                clearForm();
-            } else {
-                JOptionPane.showMessageDialog(this, "Thêm thất bại!");
-            }
+        PhanCong pc = new PhanCong();
+        pc.setManv(((NhanVien) cboMaNV.getSelectedItem()).getManv());
+        pc.setMaca(cboMaCa.getSelectedItem().toString());
+        pc.setNgay(new Date(dateChooser.getDate().getTime()));
+        pc.setGhiChu(txtGhiChu.getText());
 
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
+        if (dao.insert(pc)) {
+            loadData();
+            clearForm();
         }
     }
 
     void updatePC() {
-        try {
-            PhanCong pc = new PhanCong();
-            pc.setId(Integer.parseInt(txtId.getText()));
-            pc.setManv(Integer.parseInt(txtMaNV.getText()));
-            pc.setMaca(txtMaCa.getText());
-            pc.setNgay(new Date(dateChooser.getDate().getTime()));
-            pc.setGhiChu(txtGhiChu.getText());
+        if (txtId.getText().isEmpty() || !validateForm()) return;
 
-            if (dao.update(pc)) {
-                JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
-                loadData();
-            } else {
-                JOptionPane.showMessageDialog(this, "Cập nhật thất bại!");
-            }
+        PhanCong pc = new PhanCong();
+        pc.setId(Integer.parseInt(txtId.getText()));
+        pc.setManv(((NhanVien) cboMaNV.getSelectedItem()).getManv());
+        pc.setMaca(cboMaCa.getSelectedItem().toString());
+        pc.setNgay(new Date(dateChooser.getDate().getTime()));
+        pc.setGhiChu(txtGhiChu.getText());
 
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
-        }
+        if (dao.update(pc)) loadData();
     }
 
     void deletePC() {
-        int id = Integer.parseInt(txtId.getText());
-        if (dao.delete(id)) {
-            JOptionPane.showMessageDialog(this, "Xóa thành công!");
+        if (txtId.getText().isEmpty()) return;
+        if (dao.delete(Integer.parseInt(txtId.getText()))) {
             loadData();
             clearForm();
-        } else {
-            JOptionPane.showMessageDialog(this, "Xóa thất bại!");
         }
+    }
+
+    // ===== UTILS =====
+    boolean validateForm() {
+        return cboMaNV.getSelectedItem() != null
+                && cboMaCa.getSelectedItem() != null
+                && dateChooser.getDate() != null;
     }
 
     void clearForm() {
         txtId.setText("");
-        txtMaNV.setText("");
-        txtMaCa.setText("");
         txtGhiChu.setText("");
+        cboMaNV.setSelectedIndex(-1);
+        cboMaCa.setSelectedIndex(-1);
         dateChooser.setDate(null);
         table.clearSelection();
     }

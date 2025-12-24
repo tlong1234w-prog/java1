@@ -8,5 +8,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="D:/sql/sqljdbc_13.2/enu/jars/mssql-jdbc-13.2.1.jre11.jar"/>
 	<classpathentry kind="lib" path="D:/BTLJAVA/jcalendar-1.4/lib/jcalendar-1.4.jar"/>
+	<classpathentry kind="lib" path="D:/BTLJAVA/jbcrypt-0.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

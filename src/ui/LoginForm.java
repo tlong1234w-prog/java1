@@ -1,16 +1,14 @@
 package ui;
 
-import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import DAO.TaiKhoanDAO;
 import Model.TaiKhoan;
 
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.GridLayout;
 import java.awt.SystemColor;
-import java.awt.TrayIcon;
-
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
@@ -18,14 +16,13 @@ import java.awt.Font;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.JPasswordField;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import java.awt.event.ActionListener;
-import java.net.URL;
 import java.awt.event.ActionEvent;
 
 import Helper.Remember;
-import javax.swing.ImageIcon;
 
 public class LoginForm extends JFrame {
 
@@ -34,20 +31,13 @@ public class LoginForm extends JFrame {
     private JPasswordField txtPass;
 	protected boolean[] show;
 	private boolean showPass = false;
-
-    public static void main(String[] args) {
-        EventQueue.invokeLater(() -> {
-            try {
-                LoginForm frame = new LoginForm();
-                frame.setVisible(true);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
     public LoginForm() {
+    	
 
+    	setTitle("Đăng Nhập");
+
+        ImageIcon icon = new ImageIcon("logo.jpg");
+        setIconImage(icon.getImage());
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 872, 397);
@@ -173,4 +163,10 @@ public class LoginForm extends JFrame {
             }
         });
     }
+    public static void main(String[] args) {
+        EventQueue.invokeLater(() -> {
+            new LoginForm().setVisible(true);
+        });
+    }
 }
+
